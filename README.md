@@ -1,2 +1,3 @@
 # RedHatStuff
-Some RedHat related stuff.
+
+This repository is a collection of scripts/ content related to Red Hat.
