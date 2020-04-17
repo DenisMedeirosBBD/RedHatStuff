@@ -5,29 +5,35 @@ This script generates a list of packages that should be removed
 from RedHat 7 workstation to keep it identical to server.
 """
 
-# Packages name to be ignored.
-IGNORE_LIST_SUBSTRING = ['redhat']
+from itertools import filterfalse
+
+# Packages name to be ignored, otherwise they will remove subscription-manager.
+IGNORE_LIST_SUBSTRING = [
+    'redhat', 
+    'subscription', 
+    'initial-setup', 
+    'python-syspurpose', 
+    'rhsm-gtk'
+]
 
 # To generate the list of packages, run in each version: rpm -qa --qf "%{NAME}\n"
-with open('redhat8-workstation-packages.txt', 'r') as f:
+with open('redhat7-workstation-packages.txt', 'r') as f:
     workstation_packages = [line.strip().rstrip() for line in f.readlines()]
 
-with open('redhat8-server-packages.txt', 'r') as f:
+with open('redhat7-server-packages.txt', 'r') as f:
     server_packages = [line.strip().rstrip() for line in f.readlines()]
 
-# Remove ignored items.
-for line in workstation_packages:
+
+def determine(line):
     for word in IGNORE_LIST_SUBSTRING:
-        if word in line:
-            workstation_packages.remove(line)
+         if word in line:
+             return True
+    return False
 
-for line in server_packages:
-    for word in IGNORE_LIST_SUBSTRING:
-        if word in line:
-            server_packages.remove(line)
+workstation_packages[:] = filterfalse(determine, workstation_packages)
+server_packages[:] = filterfalse(determine, server_packages)
 
-
-# Convert the list to sets (to allow difference between sets).
+# Convert the list to sets (to allow diWfference between sets).
 wps = set(workstation_packages)
 sps = set(server_packages)
 
@@ -38,5 +44,5 @@ remove_list = sorted(wps - sps)
 print('-'*40)
 print('Run the following command in your workstation version: ')
 print('-'*40)
-print('yum -y remove {}'.format(' '.join(remove_list)))
+print('yum remove {}'.format(' '.join(remove_list)))
 print('-'*40)
